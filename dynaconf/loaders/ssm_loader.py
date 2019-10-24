@@ -1,7 +1,7 @@
 import boto3
 import botocore
+import os.path
 from dynaconf.utils import build_env_list
-from dynaconf import cli
 
 IDENTIFIER = "ssm"
 
@@ -9,11 +9,15 @@ SSM_ERRORS_FATAL = False
 
 ssm_client = boto3.client('ssm')
 
-cli.WRITERS.append('ssm')
+
+def get_path(obj, env=None):
+    if not env:
+        env = obj.current_env
+    return os.path.join(obj.SSM_PATH_FOR_DYNACONF, env).lower()
 
 
 def load_env(obj, env):
-    path = f'/{env}/'
+    path = get_path(obj, env)
     obj.logger.debug(f'path: {path}')
 
     paginator = ssm_client.get_paginator(
@@ -51,7 +55,19 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         load_env(obj, env)
 
 
-def write(obj, data=None, **kwargs):
+def write_parameter(obj, name, value, parameter_type):
+    path = os.path.join(get_path(obj, obj.ENV_FOR_DYNACONF), name).lower()
+    obj.logger.info(f'Writing {path} to SSMM')
+    """
+    ssm_client.put_parameter(
+        Name=path,
+        Value=value,
+        Type=parameter_type,
+    )
+    """
+
+
+def write(obj, _vars, **_secrets):
     """Write a value in to loader source
 
     :param obj: settings object
@@ -66,13 +82,12 @@ def write(obj, data=None, **kwargs):
             "and configure the SSM_FOR_DYNACONF_* variables"
         )
 
-    path = "/".join([obj.SSM_PATH_FOR_DYNACONF, obj.current_env.lower()])
-    print(path, data)
+    import pprint as pp
+    pp.pprint(_vars)
+    pp.pprint(_secrets)
 
-    """
-    ssm_client.put_parameter(
-        Name=path,
-        Value=data,
-        Type='SecureString',
-    )
-    """
+    for name, value in _vars.items():
+        write_parameter(obj, name, value, 'String')
+
+    for name, value in _secrets.items():
+        write_parameter(obj, name, value, 'SecureString')
