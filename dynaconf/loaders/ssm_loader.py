@@ -7,7 +7,10 @@ IDENTIFIER = "ssm"
 
 SSM_ERRORS_FATAL = False
 
-ssm_client = boto3.client('ssm')
+
+def ssm_client(obj):
+    session = boto3.session.Session(profile_name=obj.SSM_PROFILE)
+    return session.client('ssm', region_name=obj.SSM_REGION)
 
 
 def get_path(obj, env=None):
@@ -20,7 +23,7 @@ def load_env(obj, env):
     path = get_path(obj, env)
     obj.logger.debug(f'path: {path}')
 
-    paginator = ssm_client.get_paginator(
+    paginator = ssm_client(obj).get_paginator(
         'get_parameters_by_path',
     ).paginate(
         Path=path,
@@ -57,14 +60,12 @@ def load(obj, env=None, silent=True, key=None, filename=None):
 
 def write_parameter(obj, name, value, parameter_type):
     path = os.path.join(get_path(obj, obj.ENV_FOR_DYNACONF), name).lower()
-    obj.logger.info(f'Writing {path} to SSMM')
-    """
-    ssm_client.put_parameter(
+    obj.logger.info(f'Writing {path} to SSM')
+    ssm_client(obj).put_parameter(
         Name=path,
         Value=value,
         Type=parameter_type,
     )
-    """
 
 
 def write(obj, _vars, **_secrets):
@@ -81,10 +82,6 @@ def write(obj, _vars, **_secrets):
             "export SSM_ENABLED_FOR_DYNACONF=true\n"
             "and configure the SSM_FOR_DYNACONF_* variables"
         )
-
-    import pprint as pp
-    pp.pprint(_vars)
-    pp.pprint(_secrets)
 
     for name, value in _vars.items():
         write_parameter(obj, name, value, 'String')

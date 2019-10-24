@@ -164,7 +164,10 @@ VAULT_SECRET_ID_FOR_DYNACONF = get("VAULT_SECRET_ID_FOR_DYNACONF", None)
 
 # AWS SSM Support
 SSM_ENABLED_FOR_DYNACONF = get("SSM_ENABLED_FOR_DYNACONF", False)
-SSM_PATH_FOR_DYNACONF = get("SSM_PATH_FOR_DYNACONF", "dynaconf")
+SSM_PATH_FOR_DYNACONF = get("SSM_PATH_FOR_DYNACONF", "/")
+SSM_REGION = get("SSM_REGION", None)
+SSM_PROFILE = get("SSM_PROFILE", None)
+
 
 # Only core loaders defined on this list will be invoked
 core_loaders = ["YAML", "TOML", "INI", "JSON", "PY"]
