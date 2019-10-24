@@ -67,7 +67,8 @@ setup(
         "toml": ["toml"],
         "ini": ["configobj"],
         "configobj": ["configobj"],
-        "all": ["redis", "PyYAML", "configobj", "hvac"],
+        "ssm": ["boto3"],
+        "all": ["redis", "PyYAML", "configobj", "hvac", "ssm"],
     },
     entry_points={"console_scripts": ["dynaconf=dynaconf.cli:main"]},
     setup_requires=["setuptools>=38.6.0"]

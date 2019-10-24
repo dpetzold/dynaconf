@@ -1,7 +1,16 @@
-import boto3
-import botocore
 import os.path
 from dynaconf.utils import build_env_list
+
+try:
+    import boto3
+except ImportError:
+    raise ImportError(
+        "boto3 is not installed in your environment. "
+        "`pip install dynaconf[ssm]` or disable the SSM loader with "
+        "export SSM_ENABLED_FOR_DYNACONF=false"
+    )
+else:
+    import botocore
 
 IDENTIFIER = "ssm"
 
